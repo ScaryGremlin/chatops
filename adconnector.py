@@ -1,8 +1,8 @@
+from datetime import datetime
+
 from ldap3 import Connection, Server, ALL
 
 from credentials import DOMAIN
-from datetime import datetime
-import locale
 
 
 class ADConnector:
