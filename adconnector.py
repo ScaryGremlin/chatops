@@ -12,7 +12,7 @@ class ADConnector:
     def __init__(self, server: str, login: str, password: str):
         """
         Конструктор
-        :param server: Адрес сервера Active Directory. DNS имя или IP.
+        :param server: Адрес сервера Active Directory. DNS-имя или IP.
         :param login: Домен\логин - CO\Administrator
         :param password: Пароль
         """
