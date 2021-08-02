@@ -4,8 +4,9 @@ from datetime import datetime
 
 def get_password(password_length=6, by_chance=None) -> str:
     """
-    Сгенерировать пароль пользователя. Если random=True, то пароль - набор случайных символов, длинной password_length
-    Если random=None, то пароль - текщий месяц плюс год со строчной буквы, например, май2021
+    Сгенерировать пароль пользователя. Если by_chance=True, то пароль - набор случайных символов,
+    длинной password_length. Если by_chance=None, то пароль - текщий месяц
+    плюс год со строчной буквы, например, май2021
     :return: Пароль пользователя
     """
     if by_chance:
