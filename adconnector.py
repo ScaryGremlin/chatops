@@ -20,19 +20,21 @@ class ADConnector:
         self.__connection = Connection(ldap_server, login, password, auto_bind=True)
 
     @staticmethod
-    def get_password(random=None, ):
+    def get_password(password_length=0, random=None) -> str:
         """
-        Генерация пароля пользователя. Пароль - текщий месяц плюс год со строчной буквы.
-        Например, май2021
+        Генерация пароля пользователя. Если random=True, то пароль - набор случайных символов, длинной password_length
+        Если random=None, то пароль - текщий месяц плюс год со строчной буквы, например, май2021
         :return: Пароль пользователя
         """
-        if random
-        list_of_months = ["январь", "февраль", "март", "апрель", "май", "июнь",
-                          "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"]
-        date = datetime.now()
-        month = date.month
-        year = date.year
-        return list_of_months[month-1] + str(year)
+        if random:
+            pass
+        else:
+            list_of_months = ["январь", "февраль", "март", "апрель", "май", "июнь",
+                              "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"]
+            date = datetime.now()
+            month = date.month
+            year = date.year
+            return list_of_months[month-1] + str(year)
 
     def add_user(self, fio: str, org_unit: str):
         """
