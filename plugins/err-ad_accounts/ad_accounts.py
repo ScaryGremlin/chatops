@@ -32,7 +32,7 @@ class AdAccounts(BotPlugin):
         try:
             active_directory = ADConnector(server=creds.AD_SERVER, login=creds.AD_LOGIN, password=creds.AD_PASSWORD)
         except Exception:
-            return "<code>Ошибка подключения к серверу AD</code>"
+            return "Ошибка подключения к серверу AD"
         else:
             # Добавить учётную запись пользователя
             error, error_codes = active_directory.add_account(fio, org_unit, mobile)
