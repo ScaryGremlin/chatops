@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+from pathlib import Path
 
 
 def get_password(password_length=6, by_chance=None) -> str:
@@ -24,3 +25,24 @@ def get_password(password_length=6, by_chance=None) -> str:
         month = date.month
         year = date.year
         return list_of_months[month - 1] + str(year)
+
+
+def requisites_to_data(fio: str) -> tuple:
+    """
+    Преобразовать фамилию, имя и отчество в данные.
+    Данные - фамилия, имя, отчество и имя директории упакованны в кортеж.
+    Имя директории в формате Фамилия_ИО.
+    :param fio: Фамилия, имя и отчество
+    :return: Имя директории
+    """
+    surname, name, middle_name = [element.strip().capitalize() for element in fio.split()]
+    return surname, name, middle_name, surname + "_" + name[0] + middle_name[0]
+
+
+def set_directory_permissions(path: Path):
+    """
+    Установить права на директорию
+    :param path: Путь к директории
+    :return:
+    """
+    pass

@@ -1,0 +1,9 @@
+[Core]
+Name = ADAccounts
+Module = ad_accounts
+
+[Documentation]
+Description = Adding domain accounts and directories.
+
+[Python]
+Version = 3
