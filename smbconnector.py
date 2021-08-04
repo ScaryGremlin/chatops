@@ -13,9 +13,6 @@ from smbprotocol.open import (
 from smbprotocol.session import Session
 from smbprotocol.tree import TreeConnect
 
-
-
-from smb.SMBConnection import SMBConnection
 import credentials as creds
 
 
@@ -23,25 +20,22 @@ class SMBConnector:
     """
     Класс взаимодействия с smb-сервером
     """
-    def __init__(self, ip_address: str, domain: str, username: str, password: str, my_name: str, remote_name: str):
+    def __init__(self, smb_server_ip: str, port: int, username: str, password: str):
         """
-
-        :param ip_address:
-        :param domain:
+        Конструктор
+        :param smb_server_ip:
         :param username:
         :param password:
-        :param my_name:
-        :param remote_name:
         """
-        connection = Connection(uuid.uuid4(), server, port)
-        connection.connect()
+        self.__smb_connection = Connection(uuid.uuid4(), smb_server_ip, port)
+        self.__smb_connection.connect()
+        self.__smb_session = Session(self.__smb_connection, username, password)
+        self.__smb_session.connect()
 
-        session = Session(connection, username, password)
-        session.connect()
-
-        tree = TreeConnect(session, share)
-        tree.connect()
-        dir_open = Open(tree, dir_name)
+    def create_directory(self, share, directory_name):
+        smb_tree = TreeConnect(self.__smb_session, share)
+        smb_tree.connect()
+        dir_open = Open(smb_tree, directory_name)
         dir_open.create(
             ImpersonationLevel.Impersonation,
             DirectoryAccessMask.GENERIC_READ | DirectoryAccessMask.GENERIC_WRITE,
@@ -51,49 +45,25 @@ class SMBConnector:
             CreateOptions.FILE_DIRECTORY_FILE
         )
 
-        self.__connection = SMBConnection(username=username,
-                                          password=password,
-                                          my_name=my_name,
-                                          remote_name=remote_name,
-                                          domain=domain,
-                                          use_ntlm_v2=True)
-        self.__connection.connect(ip_address)
-
-    def create_directory(self, directory_name):
-        pass
-
-    def get_directories(self):
-        for path in self.__connection.listPath("exchange", "/"):
-            print(path.filename)
-
     def set_directory_permissions(self, account_directory):
         """
 
         :param account_directory:
         :return:
         """
-        attrs = self.__connection.getSecurity("exchange", "text.txt")
-        print(attrs.group)
+        pass
 
-
-
-
-
-
-
-
-
+    def create_password_file(self, account_directory):
+        pass
 
 
 def main():
-    smb_connector = SMBConnector(ip_address=creds.SMB_SERVER_IP,
-                                 domain=creds.DOMAIN,
-                                 username=creds.SMB_SERVER_LOGIN,
+    smb_connector = SMBConnector(smb_server_ip=creds.SMB_SERVER_IP,
+                                 port=creds.SMB_SERVER_PORT,
+                                 username=creds.AD_LOGIN,
                                  password=creds.AD_PASSWORD,
-                                 my_name="python_script",
-                                 remote_name=creds.SMB_SERVER_NAME
                                  )
-    # smb_connector.get_directories()
+    smb_connector.create_directory(creds.SHARE, "123")
     smb_connector.set_directory_permissions("")
 
 

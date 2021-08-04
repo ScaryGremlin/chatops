@@ -1,25 +1,26 @@
+import emoji
 from ldap3 import Connection, Server, ALL, MODIFY_REPLACE
 
-from credentials import DOMAIN
 import miscellaneous as misc
+from credentials import DOMAIN
 
 
 class ADConnector:
     """
     Класс подключения к серверу Active Directory
     """
-    ACCOUNT_ADDED = "Учётная запись пользователя добавлена."
-    DEFAULT_PASSWORD_SET = "Пароль учётной записи по умолчанию установлен."
-    ACCOUNT_ATTRIBUTES_CHANGED = "Атрибуты учётной записи изменены."
-    ERROR_CHANGING_ATTRIBUTES = "Ошибка изменения арибутов учётной записи."
-    PASSWORD_SETTING_ERROR = "Ошибка установки пароля учётной записи."
-    ERROR_ADDING_ACCOUNT = "Ошибка добавления учётной записи пользователя."
+    ACCOUNT_ADDED = emoji.emojize(":check_mark: Учётная запись пользователя добавлена.\n")
+    DEFAULT_PASSWORD_SET = emoji.emojize(":check_mark: Пароль учётной записи по умолчанию установлен.\n")
+    ACCOUNT_ATTRIBUTES_CHANGED = emoji.emojize(":check_mark: Атрибуты учётной записи изменены.\n")
+    ERROR_ADDING_ACCOUNT = emoji.emojize(":cross_mark: Ошибка добавления учётной записи пользователя.\n")
+    PASSWORD_SETTING_ERROR = emoji.emojize(":cross_mark: Ошибка установки пароля учётной записи.\n")
+    ERROR_CHANGING_ATTRIBUTES = emoji.emojize(":cross_mark: Ошибка изменения арибутов учётной записи.\n")
 
     def __init__(self, server: str, login: str, password: str):
         """
         Конструктор
         :param server: Адрес сервера Active Directory. DNS-имя или IP.
-        :param login: Домен\логин - CO\Administrator
+        :param login: NetBIOS-имя домена\логин - CO\Administrator
         :param password: Пароль
         """
         ldap_server = Server(server, get_info=ALL)
@@ -68,7 +69,7 @@ class ADConnector:
             "pwdLastSet": (MODIFY_REPLACE, [0])
         }
 
-        # Сгенерировать пароль по умолчанию
+        # Сгенерировать пароль по умолчанию - месяц и год, например, август2021
         password = misc.get_password()
 
         # Список возвращаемых ошибок или успешных выполнений команд

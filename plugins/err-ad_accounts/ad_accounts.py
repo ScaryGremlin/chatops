@@ -1,5 +1,4 @@
-from pathlib import Path
-
+import emoji
 from errbot import BotPlugin, arg_botcmd
 
 import credentials as creds
@@ -14,8 +13,15 @@ class AdAccounts(BotPlugin):
     """
     trigger_messages = [
         "как добавить учетку",
-        "как добавить учетную запись"
+        "как добавить учётку",
+        "как добавить учетную запись",
+        "как добавить учётную запись",
     ]
+
+    ERROR_CONNECTING_AD = emoji.emojize(":cross_mark: Ошибка подключения к серверу AD.\n")
+    ERROR_CONNECTING_SMB = emoji.emojize(":cross_mark: Ошибка подключения к SMB-серверу.\n")
+    ERROR_CREATING_USER_DIRECTORY = emoji.emojize(":cross_mark: Ошибка создания директории пользователя.\n")
+    ERROR_SET_PERMISSION = emoji.emojize(":cross_mark: Ошибка установки прав директории пользователя.\n")
 
     @arg_botcmd("--fio", dest="fio", type=str)
     @arg_botcmd("--ou", dest="org_unit", type=str)
@@ -32,36 +38,43 @@ class AdAccounts(BotPlugin):
         # Подключиться к серверу Active Directory
         try:
             active_directory = ADConnector(server=creds.AD_SERVER_IP,
-                                           login=creds.AD_SERVER_LOGIN,
+                                           login=creds.AD_LOGIN,
                                            password=creds.AD_PASSWORD)
         except Exception:
-            return "Ошибка подключения к серверу AD"
+            return self.ERROR_CONNECTING_AD
         else:
             # Добавить учётную запись пользователя
-            error, error_codes = active_directory.add_account(fio, org_unit, mobile)
+            error, command_results = active_directory.add_account(fio, org_unit, mobile)
+            # Если добавление учётное записи завершилось без ошибок...
             if not error:
-                # Сгенерировать путь к директории пользователя
-                account_directory = Path(creds.EXCHANGE_FOLDER) / Path(misc.requisites_to_data(fio)[3])
-                # Создать директорию пользователя
+                # Сгенерировать имя директории пользователя
+                account_directory = misc.requisites_to_data(fio)[3]
+                # Подключиться к SMB-серверу и создать директорию пользователя с необходимым набором прав
                 try:
-                    account_directory.mkdir()
-                except Exception:
-                    return "Ошибка создания директории пользователя"
-                else:
-                    # Установить права на директорию пользователя
-                    smb_connector = SMBConnector(ip_address=creds.SMB_SERVER_IP,
-                                                 domain=creds.DOMAIN,
-                                                 username=creds.SMB_SERVER_LOGIN,
-                                                 password=creds.AD_PASSWORD,
-                                                 my_name="python_script",
-                                                 remote_name=creds.SMB_SERVER_NAME
+                    smb_connector = SMBConnector(smb_server_ip=creds.SMB_SERVER_IP,
+                                                 port=creds.SMB_SERVER_PORT,
+                                                 username=creds.AD_LOGIN,
+                                                 password=creds.AD_PASSWORD
                                                  )
-                    smb_connector.set_directory_permissions(account_directory)
+                except Exception:
+                    command_results.append(self.ERROR_CONNECTING_SMB)
+                else:
+                    # Создать директорию пользователя с необходимым набором прав
+                    try:
+                        smb_connector.create_directory(creds.SHARE, account_directory)
+                    except Exception:
+                        command_results.append(self.ERROR_CREATING_USER_DIRECTORY)
+                    else:
+                        # Установить права на директорию пользователя
+                        try:
+                            smb_connector.set_directory_permissions(account_directory)
+                        except Exception:
+                            command_results.append(self.ERROR_SET_PERMISSION)
             # Оповестить об ошибках добавления учётной записи пользователя или об успешном завершении команд
             reply_message = ""
-            for error_code in error_codes:
-                reply_message += error_code + "\n"
-        return reply_message
+            for command_result in command_results:
+                reply_message += command_result
+            return reply_message
 
     def callback_message(self, message) -> None:
         if any(trigger in message.body.lower() for trigger in self.trigger_messages):
