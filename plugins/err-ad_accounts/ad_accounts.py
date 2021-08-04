@@ -5,6 +5,7 @@ from errbot import BotPlugin, arg_botcmd
 import credentials as creds
 import miscellaneous as misc
 from adconnector import ADConnector
+from smbconnector import SMBConnector
 
 
 class AdAccounts(BotPlugin):
@@ -30,7 +31,9 @@ class AdAccounts(BotPlugin):
         """
         # Подключиться к серверу Active Directory
         try:
-            active_directory = ADConnector(server=creds.AD_SERVER, login=creds.AD_LOGIN, password=creds.AD_PASSWORD)
+            active_directory = ADConnector(server=creds.AD_SERVER_IP,
+                                           login=creds.AD_SERVER_LOGIN,
+                                           password=creds.AD_PASSWORD)
         except Exception:
             return "Ошибка подключения к серверу AD"
         else:
@@ -46,7 +49,14 @@ class AdAccounts(BotPlugin):
                     return "Ошибка создания директории пользователя"
                 else:
                     # Установить права на директорию пользователя
-                    misc.set_directory_permissions(account_directory)
+                    smb_connector = SMBConnector(ip_address=creds.SMB_SERVER_IP,
+                                                 domain=creds.DOMAIN,
+                                                 username=creds.SMB_SERVER_LOGIN,
+                                                 password=creds.AD_PASSWORD,
+                                                 my_name="python_script",
+                                                 remote_name=creds.SMB_SERVER_NAME
+                                                 )
+                    smb_connector.set_directory_permissions(account_directory)
             # Оповестить об ошибках добавления учётной записи пользователя или об успешном завершении команд
             reply_message = ""
             for error_code in error_codes:

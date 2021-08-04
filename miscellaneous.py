@@ -1,6 +1,5 @@
 import random
 from datetime import datetime
-from pathlib import Path
 
 
 def get_password(password_length=6, by_chance=None) -> str:
@@ -37,12 +36,3 @@ def requisites_to_data(fio: str) -> tuple:
     """
     surname, name, middle_name = [element.strip().capitalize() for element in fio.split()]
     return surname, name, middle_name, surname + "_" + name[0] + middle_name[0]
-
-
-def set_directory_permissions(path: Path):
-    """
-    Установить права на директорию
-    :param path: Путь к директории
-    :return:
-    """
-    pass
