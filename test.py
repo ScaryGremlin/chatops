@@ -21,7 +21,7 @@ from smbprotocol.security_descriptor import (
 )
 
 # Not needed when using Kerberos auth, can also be set as kwargs when calling open_file.
-smbclient.ClientConfig(username=r"CO\Administrator", password='RP21-kmn6root')
+smbclient.ClientConfig(username=r"CO\Administrator", password='')
 
 
 class SecurityInfo:
