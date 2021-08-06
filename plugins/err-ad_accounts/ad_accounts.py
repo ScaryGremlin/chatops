@@ -16,11 +16,19 @@ class AdAccounts(BotPlugin):
         "как добавить учётку",
         "как добавить учетную запись",
         "как добавить учётную запись",
+        "как создать учетку",
+        "как создать учётку",
+        "как создать учетную запись",
+        "как создать учётную запись"
     ]
 
+    DIRECTORY_AND_PASSFILE_CREATED = emoji.emojize(":check_mark: Директория пользователя и файл "
+                                                   "с паролем созданы. \n")
+    PERMISSIONS_SET = emoji.emojize(":check_mark: Права на директорию пользователя и на файл с паролем установлены. \n")
     ERROR_CONNECTING_AD = emoji.emojize(":cross_mark: Ошибка подключения к серверу AD.\n")
     ERROR_CONNECTING_SMB = emoji.emojize(":cross_mark: Ошибка подключения к SMB-серверу.\n")
-    ERROR_CREATING_USER_DIRECTORY = emoji.emojize(":cross_mark: Ошибка создания директории пользователя.\n")
+    ERROR_CREATING_USER_DIRECTORY_OR_FILE = emoji.emojize(":cross_mark: Ошибка создания директории пользователя "
+                                                          "или файла с паролем.\n")
     ERROR_SET_PERMISSION = emoji.emojize(":cross_mark: Ошибка установки прав директории пользователя.\n")
 
     @arg_botcmd("--fio", dest="fio", type=str)
@@ -52,24 +60,29 @@ class AdAccounts(BotPlugin):
                 # Подключиться к SMB-серверу и создать директорию пользователя с необходимым набором прав
                 try:
                     smb_connector = SMBConnector(smb_server_ip=creds.SMB_SERVER_IP,
-                                                 port=creds.SMB_SERVER_PORT,
-                                                 username=creds.AD_LOGIN,
-                                                 password=creds.AD_PASSWORD
+                                                 username=creds.SMB_SERVER_LOGIN,
+                                                 password=creds.AD_PASSWORD,
+                                                 domain=creds.DOMAIN,
+                                                 remote_name=creds.SMB_SERVER_NAME
                                                  )
                 except Exception:
                     command_results.append(self.ERROR_CONNECTING_SMB)
                 else:
-                    # Создать директорию пользователя с необходимым набором прав
+                    # Создать директорию пользователя и файл с паролем с необходимым набором прав
                     try:
                         smb_connector.create_directory(creds.SHARE, account_directory)
+                        smb_connector.create_password_file(creds.SHARE, account_directory)
                     except Exception:
-                        command_results.append(self.ERROR_CREATING_USER_DIRECTORY)
+                        command_results.append(self.ERROR_CREATING_USER_DIRECTORY_OR_FILE)
                     else:
-                        # Установить права на директорию пользователя
+                        command_results.append(self.DIRECTORY_AND_PASSFILE_CREATED)
+                        # Установить права на директорию пользователя и на файл с паролем
                         try:
-                            smb_connector.set_directory_permissions(account_directory)
+                            smb_connector.set_permissions(creds.SHARE, account_directory)
                         except Exception:
                             command_results.append(self.ERROR_SET_PERMISSION)
+                        else:
+                            command_results.append(self.PERMISSIONS_SET)
             # Оповестить об ошибках добавления учётной записи пользователя или об успешном завершении команд
             reply_message = ""
             for command_result in command_results:
@@ -78,7 +91,8 @@ class AdAccounts(BotPlugin):
 
     def callback_message(self, message) -> None:
         if any(trigger in message.body.lower() for trigger in self.trigger_messages):
-            self.send(message.frm, "Воспользуйтесь командой !add_account")
+            self.send(message.frm, emoji.emojize(":information: Воспользуйтесь командой !add_account. \n "
+                                                 "Для подробностей наберите help"))
         if message.body == "help":
             self.send(message.frm, '!add_account --fio "Фамилия Имя Отчество" '
                                    '--ou "OrganizationUnit" --mobile "+79995556677"')

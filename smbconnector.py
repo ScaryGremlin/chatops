@@ -1,5 +1,5 @@
 from smb.SMBConnection import SMBConnection
-
+import paramiko
 import credentials as creds
 
 
@@ -20,33 +20,20 @@ class SMBConnector:
                                               remote_name=remote_name,
                                               domain=domain,
                                               use_ntlm_v2=True)
-        self.__smb_connection.connect(smb_server_ip)
+        self.__smb_connection.connect(smb_server_ip, timeout=20)
 
     def create_directory(self, share, directory_name):
-        for element in self.__smb_connection.listPath(share, directory_name):
-            print(element.filename)
+        self.__smb_connection.createDirectory(share, directory_name)
 
-    def set_directory_permissions(self, account_directory):
-        """
-
-        :param account_directory:
-        :return:
-        """
+    def create_password_file(self, share, directory_name):
         pass
 
-    def create_password_file(self, account_directory):
-        pass
+    def set_permissions(self, account_directory):
+        with paramiko.SSHClient() as ssh_client:
+            id_rsa = paramiko.RSAKey.from_private_key_file("/home/member/.ssh/id_rsa")
+            ssh_client.load_system_host_keys()
+            ssh_client.connect("192.168.213.237", username="user", pkey=id_rsa)
+            stdin, stdout, stderr = ssh_client.exec_command(f'c:/scripts/set_permission "{account_directory}"')
+            print(stdout.read().decode("cp1252"))
+        del ssh_client, stdin, stdout, stderr
 
-
-def main():
-    smb_connector = SMBConnector(smb_server_ip=creds.SMB_SERVER_IP,
-                                 username=creds.SMB_SERVER_LOGIN,
-                                 password=creds.AD_PASSWORD,
-                                 domain=creds.DOMAIN,
-                                 remote_name=creds.SMB_SERVER_NAME
-                                 )
-    smb_connector.create_directory(creds.SHARE, "/")
-
-
-if __name__ == '__main__':
-    main()

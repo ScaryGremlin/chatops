@@ -12,7 +12,7 @@ BOT_ALT_PREFIX = ("jimmy", "/")
 BOT_ALT_PREFIX_SEPARATORS = (",", ";")
 
 BOT_IDENTITY = {
-    "token": ""
+    "token": "1923798395:AAGzKtQg6VJUcWUy84RSLGyv7X4nomXmHlQ"
 }
 
 BOT_ADMINS = ("139653633", )
