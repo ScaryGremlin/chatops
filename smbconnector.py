@@ -1,6 +1,8 @@
 import paramiko
 from smb.SMBConnection import SMBConnection
 
+import miscellaneous as misc
+
 
 class SMBConnector:
     """
@@ -25,7 +27,13 @@ class SMBConnector:
         self.__smb_connection.createDirectory(share, directory_name)
 
     def create_password_file(self, share, directory_name):
-        pass
+        # Создать локальную копию файла с паролем
+        password = misc.get_password(password_length=8, by_chance=True)
+        with open("pass.txt", "w") as pass_file:
+            pass_file.write(password)
+
+        with open("pass.txt", 'rb') as pass_file:
+            uploaded_file = self.__smb_connection.storeFile(share, directory_name, "pass.txt", pass_file)
 
     @staticmethod
     def set_permissions(self, account_directory: str):
